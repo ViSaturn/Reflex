@@ -13,7 +13,7 @@ local Self = setmetatable({}, {
 
 return {
   -- Client - Server Communication
-  Shared = setmetatable({}, {
+  SharedEvents = setmetatable({}, {
     __index = function(_, Index)
       Index = tostring(Index)
 
@@ -58,6 +58,58 @@ return {
           Event.Name = Index
           Event.Parent = script
           return Event.OnServerEvent:Connect(Value)
+        end
+      end
+    end
+  }),
+
+  SharedFunctions = setmetatable({}, {
+    __index = function(_, Index)
+      Index = tostring(Index)
+
+      if IsClient then
+        -- * Client using server-side functions
+        local Event = script:FindFirstChild(Index)
+        return function(...)
+          return Event:InvokeServer(...)
+        end
+      elseif IsServer then
+        -- * Server using client-side functions
+        local Event = script:FindFirstChild(Index)
+        return function(Client, ...)
+          -- Automatic detection of which to fire
+          if typeof(Client) == "Instance" and Client:IsA("Player") then
+            warn("Invoking the client is bad, https://www.youtube.com/watch?v=0H_xcA-0LDE")
+            return Event:InvokeClient(Client, ...)
+          else
+            warn("Invoking clients is bad, https://www.youtube.com/watch?v=0H_xcA-0LDE")
+            return Event:InvokeAllClients(Client, ...)
+          end
+        end
+      end
+    end,
+
+    -- TODO: Add RemoteFunction support
+    __newindex = function(_, Index, Value)
+      Index = tostring(Index)
+
+      if IsClient then
+        -- * Client making functions for the server
+        if script:FindFirstChild(Index) then
+          local Event = script:FindFirstChild(Index)
+          Event.OnClientInvoke = Value
+        end
+      elseif IsServer then
+        -- * Server making functions for the client
+        if script:FindFirstChild(Index) then
+          -- If it already exists, just listen to it
+          script:FindFirstChild(Index).OnServerInvoke = Value
+        else
+          -- Make the event if it does not already exist
+          local Event = Instance.new("RemoteFunction")
+          Event.Name = Index
+          Event.Parent = script
+          Event.OnServerInvoke = Value
         end
       end
     end

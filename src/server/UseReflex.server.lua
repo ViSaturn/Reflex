@@ -7,9 +7,9 @@ Reflex.ForClient {
   end
 }
 ]]
-Reflex.Shared.CoolFunction = function(...)
-  print("hi")
-  print(...)
+Reflex.SharedEvents.CoolFunction = function(...)
+  print("The Server Got:", ...)
+  return "the server's response"
 end
 
 -- Reflex.Client.NewRemote("hello")

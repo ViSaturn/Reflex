@@ -1,6 +1,10 @@
 # Project place file
-/Reflex.rbxlx
+/Reflex.rbxl
 
 # Roblox Studio lock files
 /*.rbxlx.lock
 /*.rbxl.lock
+
+# Testing fils
+/src/client/UseReflex.client.lua
+/src/server/UseReflex.server.lua
